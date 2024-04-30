@@ -1,1 +1,0 @@
-- Basic CRUD operation using FastAPI
