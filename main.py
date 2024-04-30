@@ -84,4 +84,4 @@ async def update_post(id:int,post:Post):
     post_dict['id'] = id
     #replace obj in the index
     my_posts[index] = post_dict
-    print(my_posts)
+    return {"data":post_dict}
