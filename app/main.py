@@ -31,21 +31,7 @@ while True:
         print("Error : ",error)
         time.sleep(2)
     
-# like cache   
-my_posts =[
-    {"title":"title 1", "content":"content 1", "id":0},
-    {"title":"title 2", "content":"content 2", "id":1}
-]
-def find_post(id):
-    for p in my_posts:
-        if p['id'] == id:
-            return p 
 
-def find_index_id(id):
-    for i,p in enumerate(my_posts): #as list
-        if p['id'] == id :
-            return i
-        
 @app.get("/")
 async def root():
     return {"message": "REST API TEST"}
