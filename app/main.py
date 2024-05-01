@@ -74,12 +74,12 @@ async def get_post(id:int,response:Response):
 # modify status code
 @app.post("/posts")
 async def create_posts(post:Post = Body(...),status_code = status.HTTP_201_CREATED):
-    id = 1
-    # append new post
-    post_dict = post.model_dump()
-    post_dict['id'] = randrange(0,1000000)
-    my_posts.append(post_dict)
-    return {"message": f"successfully "} 
+    cursor.execute(""" INSERT INTO posts (title,content,published)
+                       VALUES (%s,%s,%s) RETURNING *""",
+                       (post.title, post.content, post.published))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"message": new_post} 
 
 #delete
 @app.delete("/posts/{id}")
