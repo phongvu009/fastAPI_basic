@@ -52,16 +52,17 @@ async def root():
 
 @app.get("/posts")
 async def get_posts():
-    posts = cursor.execute('''  SELECT * FROM posts''')
+    cursor.execute('''  SELECT * FROM posts''')
     posts = cursor.fetchall()
     print(posts)
     return {"data": posts}
 
 @app.get("/posts/{id}")
-async def get_post(id:int,response:Response):
-    print(id)
-    print(type(id))
-    post = find_post(int(id))
+async def get_post(id:int):
+    #find id , id need back to string to work on SQL
+    cursor.execute(f"SELECT * FROM posts WHERE id ={id} " )
+    post = cursor.fetchone()
+    print(post)
     # No post found
     if not post :
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
@@ -84,23 +85,24 @@ async def create_posts(post:Post = Body(...),status_code = status.HTTP_201_CREAT
 #delete
 @app.delete("/posts/{id}")
 async def del_post(id:int,status_code = status.HTTP_204_NO_CONTENT):
-    index = find_index_id(id)
-    if index is None:
+    cursor.execute(f"DELETE FROM posts WHERE id={id} RETURNING *")
+    deleted_post = cursor.fetchone()
+    conn.commit()  #close database
+    
+    if deleted_post is None:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail=f"post_id {id} not found")
-    my_posts.pop(index)
+    
     return Response(status_code = status.HTTP_204_NO_CONTENT)
 
 #update
 @app.put("/posts/{id}")
 async def update_post(id:int,post:Post):
-    index = find_index_id(id)
-    if index is None:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND)
-    print(post)
-    # convert into dict
-    post_dict = post.model_dump()
-    #add id to the obj/dict
-    post_dict['id'] = id
-    #replace obj in the index
-    my_posts[index] = post_dict
-    return {"data":post_dict}
+    cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""",
+                   (post.title,post.content,post.published,id),)
+    updated_post = cursor.fetchone()
+    conn.commit()
+    if updated_post is None:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
+                            detail =f"post with {id} does not exist")
+    
+    return {"data":updated_post}
