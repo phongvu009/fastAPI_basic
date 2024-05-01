@@ -2,7 +2,8 @@ from fastapi import FastAPI, Response, status, HTTPException
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
-import uuid 
+from random import randrange
+import psycopg2
 
 # create instance
 app = FastAPI()
@@ -14,6 +15,7 @@ class Post(BaseModel):
     published: bool=True
     rating: Optional[int] = None
 
+#get connection
 
 # like cache   
 my_posts =[
