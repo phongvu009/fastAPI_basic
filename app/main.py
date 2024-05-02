@@ -7,20 +7,16 @@ from sqlalchemy.orm import Session
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from . import models
-from .database import engine, SessionLocal
+from .database import engine, SessionLocal,get_db
 import time 
 
+#
 models.Base.metadata.create_all(bind=engine)
+
 # create instance
 app = FastAPI()
 
-#
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 #define Class as chame for Database to make sure data match database type
 class Post(BaseModel):
@@ -48,7 +44,8 @@ async def root():
 
 @app.get("/sqlalchemy")
 async def test_posts(db:Session=Depends(get_db)):
-    return {"status":"success"}
+    posts = db.query(models.Post).all()
+    return {"data": posts}
     
 
 @app.get("/posts")
